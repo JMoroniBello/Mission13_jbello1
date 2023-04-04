@@ -1,22 +1,18 @@
-import { useState } from 'react';
-import data from './MovieData.json';
-
-const mds = data.MovieData;
+import { useState, useEffect, useMemo } from 'react';
+import { Movie } from './types/movies';
 
 function MovieList() {
-  const [listOfMovies, setListOfMovies] = useState(mds);
-  const addMovie = () => {
-    setListOfMovies([
-      ...mds,
-      {
-        Category: 'Action/Adventure',
-        Title: 'New Movie',
-        Year: 2023,
-        Director: 'Josh',
-        Rating: 'PG-13',
-      },
-    ]);
-  };
+  const [movieData, setMovieDate] = useState<Movie[]>([]);
+  useEffect(() => {
+    const fetchMovies = async () => {
+      const rsp = await fetch('https://localhost:4000/Movies');
+      const temp = await rsp.json();
+      temp.sort((a: any, b: any) => a.title.localeCompare(b.title));
+      setMovieDate(temp);
+    };
+    fetchMovies();
+  }, []);
+
   return (
     <>
       <div>
@@ -33,27 +29,29 @@ function MovieList() {
               <th>Rating</th>
               <th>Category</th>
               <th>Edited</th>
+              <th>Lent To</th>
+              <th>Notes</th>
             </tr>
           </thead>
 
           <tbody>
-            {listOfMovies.map((m) => (
-              <tr>
-                <td>{m.Title}</td>
-                <td>{m.Year}</td>
-                <td>{m.Director}</td>
-                <td>{m.Rating}</td>
-                <td>{m.Category}</td>
-                <td>{m.Edited}</td>
-              </tr>
-            ))}
+            {movieData
+              .filter((movie) => movie.edited !== '')
+              .map((m) => (
+                <tr key={m.movieId}>
+                  <td>{m.title}</td>
+                  <td>{m.year}</td>
+                  <td>{m.director}</td>
+                  <td>{m.rating}</td>
+                  <td>{m.category}</td>
+                  <td>{m.edited}</td>
+                  <td>{m.lentTo}</td>
+                  <td>{m.notes}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
-
-      <button className="btn btn-success" onClick={addMovie}>
-        Add test movie
-      </button>
     </>
   );
 }
